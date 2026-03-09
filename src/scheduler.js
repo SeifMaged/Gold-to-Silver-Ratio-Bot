@@ -27,12 +27,13 @@ async function monitorPrices() {
         console.error("Error monitoring prices:", error.message);
     }
 
-    // Daily Summary at 10 AM UTC
+    // Daily Summary at 10am UTC
     const now = new Date();
     const lastSent = state.lastDailySent ? new Date(state.lastDailySent) : null;
-    ONE_DAY = 24*60*60*1000;
+    const today10UTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 10, 0, 0));
 
-    if (now.getUTCHours() === 10 && (!lastSent || now - lastSent >= ONE_DAY)) {
+
+    if (now >= today10UTC && (!lastSent || lastSent < today10UTC)) {
         try {
             const { goldPrice, silverPrice } = await fetchMetalPrices();
             const ratio = calculateRatio(goldPrice, silverPrice);
