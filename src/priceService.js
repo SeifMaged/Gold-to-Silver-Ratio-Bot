@@ -3,21 +3,6 @@ const { getCache, setCache } = require('./cache');
 
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-async function fetchMetalPrice(symbol) {
-    const response = await axios.get(
-        `https://api.gold-api.com/price/${symbol}`,
-        { timeout : 5000 }
-    );
-
-    const data = response.data;
-
-    if (!data || typeof data.price !== "number") {
-        throw new Error("Invalid API response");
-    }
-
-    return data.price;
-}
-
 async function fetchMetalPrices() {
     const { cachedData, lastFetchTime } = getCache();
     
