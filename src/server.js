@@ -32,7 +32,32 @@ app.get("/status", (req, res) => {
         timestamp: new Date().toISOString()
     }
     )
-})
+});
+
+app.post('/config', express.json(), (req, res) => {
+    const { buyThreshold, sellThreshold } = req.body;
+    if (
+        typeof buyThreshold !== "number" ||
+        typeof sellThreshold !== "number" ||
+        buyThreshold <= sellThreshold || 
+        buyThreshold <= 0 ||
+        sellThreshold <= 0
+    ) {
+        return res.status(400).json({ error: "Invalid threshold values" });
+    }
+    const state = loadState();
+    // Update the state with the new thresholds
+    state.silverThresholdBuy = buyThreshold;
+    state.silverThresholdSell = sellThreshold;
+    saveState(state);
+
+    res.json({ 
+        message: "Configuration updated successfully",
+        buyThreshold,
+        sellThreshold
+     });
+});
+
 
 // 404 Handler middleware
 app.use((req, res) => {
