@@ -4,7 +4,7 @@ const express = require('express');
 const { fetchMetalPrices } = require('./priceService');
 const { calculateRatio, evaluateRatio } = require("./ratioService");
 const { startScheduler } = require('./scheduler');
-const { loadState } = require('./stateManager');
+const { loadState, saveState} = require('./stateManager');
 
 let state = loadState();
 
@@ -34,8 +34,20 @@ app.get("/status", (req, res) => {
     )
 });
 
+app.get("/config", (req, res) => {
+    res.json({
+        buyThreshold: state.silverThresholdBuy,
+        sellThreshold: state.silverThresholdSell
+    });
+});
+
 app.post('/config', express.json(), (req, res) => {
-    const { buyThreshold, sellThreshold } = req.body;
+    const { buyThreshold, sellThreshold } = req.body || {};
+
+    if (buyThreshold === undefined || sellThreshold === undefined) {
+        return res.status(400).json({ error: "Missing buyThreshold or sellThreshold in request body" });
+    }
+
     if (
         typeof buyThreshold !== "number" ||
         typeof sellThreshold !== "number" ||
@@ -43,9 +55,9 @@ app.post('/config', express.json(), (req, res) => {
         buyThreshold <= 0 ||
         sellThreshold <= 0
     ) {
-        return res.status(400).json({ error: "Invalid threshold values" });
+        return res.status(400).json({ error: "Invalid threshold values, please ensure buy threshold is greater than sell threshold and both are positive numbers" });
     }
-    const state = loadState();
+
     // Update the state with the new thresholds
     state.silverThresholdBuy = buyThreshold;
     state.silverThresholdSell = sellThreshold;
