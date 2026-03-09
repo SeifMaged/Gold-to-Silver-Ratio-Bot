@@ -1,9 +1,9 @@
 const { fetchMetalPrices } = require('./priceService');
 const { calculateRatio, evaluateRatio } = require("./ratioService");
 const { sendTelegramMessage } = require('./telegramService');
-const { loadState, saveState } = require('./stateManager');
+const { getState, updateState } = require('./state');
 
-let state = loadState();
+let state = getState();
 
 async function monitorPrices() {
     try {
@@ -12,14 +12,12 @@ async function monitorPrices() {
         const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
 
         if (!state.lastRecommendation){
-            state.lastRecommendation = recommendation
-            saveState(state)
+            updateState({ lastRecommendation: recommendation });
         }
         if (recommendation != state.lastRecommendation) {
             console.log("Recommendation Changed, Sending Alert ", recommendation);
             await sendTelegramMessage(`⚠️ Recommendation Changed: ${recommendation}\n\nGold Price = $${goldPrice}\nSilver Price = $${silverPrice}\nRatio = ${ratio}`);
-            state.lastRecommendation = recommendation;
-            saveState(state);
+            updateState({ lastRecommendation: recommendation });
         } else {
             console.log("No change in recommendation: ", recommendation);
         }
@@ -39,8 +37,7 @@ async function monitorPrices() {
             const ratio = calculateRatio(goldPrice, silverPrice);
             const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
             await sendTelegramMessage(`Daily Summary:\n\nGold Price = $${goldPrice}\nSilver Price = $${silverPrice}\nRatio = ${ratio}\nRecommendation: ${recommendation}`);
-            state.lastDailySent = now.toISOString();
-            saveState(state);
+            updateState({ lastDailySent: now.toISOString() });
         } catch (error) {
             console.error("Error sending daily summary:", error.message);
         }

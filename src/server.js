@@ -4,9 +4,9 @@ const express = require('express');
 const { fetchMetalPrices } = require('./priceService');
 const { calculateRatio, evaluateRatio } = require("./ratioService");
 const { startScheduler } = require('./scheduler');
-const { loadState, saveState} = require('./stateManager');
+const { getState, updateState} = require('./state');
 
-let state = loadState();
+let state = getState();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,9 +59,7 @@ app.post('/config', express.json(), (req, res) => {
     }
 
     // Update the state with the new thresholds
-    state.silverThresholdBuy = buyThreshold;
-    state.silverThresholdSell = sellThreshold;
-    saveState(state);
+    updateState({ silverThresholdBuy: buyThreshold, silverThresholdSell: sellThreshold });
 
     res.json({ 
         message: "Configuration updated successfully",
