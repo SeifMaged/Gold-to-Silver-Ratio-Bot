@@ -4,12 +4,14 @@ const { sendTelegramMessage } = require('./telegramService');
 const { getState, updateState } = require('./state');
 
 async function monitorPrices() {
+    const state = getState(); // Refresh state to get latest values
+
     try {
         const { goldPrice, silverPrice } = await fetchMetalPrices();
         const ratio = calculateRatio(goldPrice, silverPrice);
         const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
         
-        state = getState(); // Refresh state to get latest values
+        
         if (!state.lastRecommendation){
             updateState({ lastRecommendation: recommendation });
         }
@@ -24,7 +26,14 @@ async function monitorPrices() {
         console.error("Error monitoring prices:", error.message);
     }
 
+    await dailyCheck(); // Check for daily summary
+
+}
+
+async function dailyCheck() {
     // Daily Summary at 10am UTC
+    const state = getState(); // Refresh state to get latest values
+    
     const now = new Date();
     const lastSent = state.lastDailySent ? new Date(state.lastDailySent) : null;
     const today10UTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 10, 0, 0));
@@ -41,7 +50,6 @@ async function monitorPrices() {
             console.error("Error sending daily summary:", error.message);
         }
     }
-
 }
 
 function startScheduler() {
