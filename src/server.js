@@ -71,6 +71,14 @@ app.post('/config', requireAPIKey, express.json(), (req, res) => {
      });
 });
 
+// Handles base route with API info
+app.get("/", (req, res) => {
+    res.json({ 
+        message: "Welcome to the Gold-Silver Ratio Monitor API. Use /prices for current prices and ratio, /status for server status, and /config to view or update thresholds.",
+        endpoints : {prices: "/prices", status: "/status", config: "/config (requires x-api-key header)" }
+    }
+    );
+});
 
 // 404 Handler middleware
 app.use((req, res) => {
