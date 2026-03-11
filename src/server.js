@@ -5,18 +5,20 @@ const { fetchMetalPrices } = require('./priceService');
 const { calculateRatio, evaluateRatio } = require("./ratioService");
 const { startScheduler } = require('./scheduler');
 const { getState, updateState} = require('./state');
-
-let state = getState();
+const { requireAPIKey, limiter} = require('./middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(limiter);
 
 app.get("/prices", async (req, res) => {
     try {
         const { goldPrice, silverPrice } = await fetchMetalPrices();
         
         const ratio = calculateRatio(goldPrice, silverPrice);
-        const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
+        const { silverThresholdBuy, silverThresholdSell } = getState();
+        const recommendation = evaluateRatio(ratio, silverThresholdBuy, silverThresholdSell);
 
 
     res.json({gold: goldPrice, silver: silverPrice, ratio, recommendation: recommendation});
@@ -34,14 +36,15 @@ app.get("/status", (req, res) => {
     )
 });
 
-app.get("/config", (req, res) => {
+app.get("/config", requireAPIKey, (req, res) => {
+    const { silverThresholdBuy, silverThresholdSell } = getState();
     res.json({
-        buyThreshold: state.silverThresholdBuy,
-        sellThreshold: state.silverThresholdSell
+        buyThreshold: silverThresholdBuy,
+        sellThreshold: silverThresholdSell
     });
 });
 
-app.post('/config', express.json(), (req, res) => {
+app.post('/config', requireAPIKey, express.json(), (req, res) => {
     const { buyThreshold, sellThreshold } = req.body || {};
 
     if (buyThreshold === undefined || sellThreshold === undefined) {
