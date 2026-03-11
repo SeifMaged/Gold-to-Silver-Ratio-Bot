@@ -3,14 +3,13 @@ const { calculateRatio, evaluateRatio } = require("./ratioService");
 const { sendTelegramMessage } = require('./telegramService');
 const { getState, updateState } = require('./state');
 
-let state = getState();
-
 async function monitorPrices() {
     try {
         const { goldPrice, silverPrice } = await fetchMetalPrices();
         const ratio = calculateRatio(goldPrice, silverPrice);
         const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
-
+        
+        state = getState(); // Refresh state to get latest values
         if (!state.lastRecommendation){
             updateState({ lastRecommendation: recommendation });
         }
