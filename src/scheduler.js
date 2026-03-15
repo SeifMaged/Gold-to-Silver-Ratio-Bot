@@ -13,10 +13,10 @@ async function monitorPrices() {
         
         
         if (!state.lastRecommendation){
+            // First run scenario, just save the recommendation without sending alert
             updateState({ lastRecommendation: recommendation });
             console.log("No previous recommendation available, loaded current recommendation: ", recommendation);
-        }
-        else if (recommendation != state.lastRecommendation) {
+        } else if (recommendation != state.lastRecommendation) {
             console.log("Recommendation Changed, Sending Alert ", recommendation);
             await sendTelegramMessage(`⚠️ Recommendation Changed: ${recommendation}\n\nGold Price = $${goldPrice}\nSilver Price = $${silverPrice}\nRatio = ${ratio}`);
             updateState({ lastRecommendation: recommendation });

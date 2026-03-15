@@ -31,6 +31,7 @@ app.get("/prices", async (req, res) => {
 app.get("/status", (req, res) => {
     res.json({
         status: "running",
+        uptime: process.uptime(),
         timestamp: new Date().toISOString()
     }
     )
