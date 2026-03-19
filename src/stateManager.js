@@ -29,7 +29,8 @@ function getDefaultState() {
             lastRecommendation : null,
             lastDailySent : null,
             silverThresholdBuy : 70,
-            silverThresholdSell : 50
+            silverThresholdSell : 50,
+            lastAlertSent : null
         };
 }
 
