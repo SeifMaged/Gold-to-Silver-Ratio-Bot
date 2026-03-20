@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 const express = require('express');
-const { fetchMetalPrices } = require('./priceService');
-const { calculateRatio, evaluateRatio } = require("./ratioService");
-const { startScheduler } = require('./scheduler');
-const { getState, updateState} = require('./state');
-const { requireAPIKey, limiter} = require('./middleware');
+const { fetchMetalPrices } = require('./services/priceService');
+const { calculateRatio, evaluateRatio } = require("./services/signalService");
+const { startScheduler } = require('./jobs/scheduler');
+const { getState, updateState} = require('./services/stateService');
+const { requireAPIKey, limiter} = require('./utils/middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

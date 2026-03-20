@@ -1,7 +1,7 @@
-const { fetchMetalPrices } = require('./priceService');
-const { calculateRatio, evaluateRatio } = require("./ratioService");
-const { sendTelegramMessage } = require('./telegramService');
-const { getState, updateState } = require('./state');
+const { fetchMetalPrices } = require('../services/priceService');
+const { calculateRatio, evaluateRatio } = require("../services/signalService");
+const { sendTelegramMessage } = require('../services/alertService');
+const { getState, updateState } = require('../services/stateService');
 
 async function monitorPrices() {
     const COOLDOWN = 4 * 60 * 60 * 1000; // 4 hour cooldown
@@ -13,7 +13,7 @@ async function monitorPrices() {
     try {
         const { goldPrice, silverPrice } = await fetchMetalPrices();
         const ratio = calculateRatio(goldPrice, silverPrice);
-        const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell);
+        const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell, state.lastRecommendation);
         
         
         if (!state.lastRecommendation){

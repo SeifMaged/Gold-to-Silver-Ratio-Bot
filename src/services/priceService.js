@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { getCache, setCache } = require('./cache');
+const { getCache, setCache } = require('../utils/cache');
 
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
