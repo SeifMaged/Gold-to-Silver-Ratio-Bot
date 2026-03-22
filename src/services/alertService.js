@@ -18,4 +18,28 @@ async function sendTelegramMessage(message) {
     }
 }
 
-module.exports = { sendTelegramMessage };
+function shouldSendAlert({
+    recommendation,
+    lastRecommendation,
+    lastAlertSent,
+    cooldownMs
+}) {
+    if (!lastRecommendation){
+        return { send : false, reason : "initial_run"};
+    }
+
+    if (recommendation === lastRecommendation) {
+        return { send : false, reason : "no_change"};
+    }
+
+    const now = Date.now();
+    const last = lastAlertSent ? new Date(lastALertSent).getTime() : null;
+
+    if (last && now - last < cooldownMs) {
+        return { send: false, reason : "cooldown_active"};
+    }
+
+    return {send: true};
+}
+
+module.exports = { sendTelegramMessage , shouldSendAlert};

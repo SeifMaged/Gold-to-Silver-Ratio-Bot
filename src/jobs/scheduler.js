@@ -1,44 +1,54 @@
 const { getPrices } = require('../services/priceService');
 const { calculateRatio, generateSignal } = require("../services/signalService");
-const { sendTelegramMessage } = require('../services/alertService');
+const { sendTelegramMessage , shouldSendAlert} = require('../services/alertService');
 const { getState, updateState } = require('../services/stateService');
 
 async function monitorPrices() {
     const COOLDOWN = 4 * 60 * 60 * 1000; // 4 hour cooldown
     const state = getState(); // Refresh state to get latest values
-    const lastAlertSent = state.lastAlertSent ? new Date(state.lastAlertSent) : null;
-    const cooldownPassed = !lastAlertSent || Date.now() - lastAlertSent >= COOLDOWN;
-
 
     try {
         const { goldPrice, silverPrice } = await getPrices();
+
         const ratio = calculateRatio(goldPrice, silverPrice);
-        const recommendation = generateSignal(ratio, state.silverThresholdBuy, state.silverThresholdSell, state.lastRecommendation);
-        
-        
-        if (!state.lastRecommendation){
+
+        const recommendation = generateSignal(
+            ratio,
+            state.silverThresholdBuy,
+            state.silverThresholdSell,
+            state.lastRecommendation
+        );
+
+        const decision = shouldSendAlert({
+            recommendation,
+            lastRecommendation: state.lastRecommendation,
+            lastAlertSent: state.lastAlertSent,
+            cooldownMs: COOLDOWN
+        });
+
+        if (decision.send) {
+            await sendTelegramMessage(`⚠️ Recommendation Changed: ${recommendation}\n\nGold Price = $${goldPrice}\nSilver Price = $${silverPrice}\nRatio = ${ratio}`);
+            updateState({
+                lastRecommendation: recommendation,
+                lastAlertSent: new Date().toISOString()
+            });
+
+        } else if (decision.reason === "initial_run") {
             // First run scenario, just save the recommendation without sending alert
             updateState({ lastRecommendation: recommendation });
-            console.log("No previous recommendation available, loaded current recommendation: ", recommendation);
-        } else if (recommendation !== state.lastRecommendation) {
-            if (cooldownPassed) {
-                console.log("Recommendation Changed, Sending Alert ", recommendation);
-                await sendTelegramMessage(`⚠️ Recommendation Changed: ${recommendation}\n\nGold Price = $${goldPrice}\nSilver Price = $${silverPrice}\nRatio = ${ratio}`);
-                updateState({ lastRecommendation: recommendation , lastAlertSent : new Date().toISOString() });
-            } else{
-                console.log("Recommendation changed but cooldown active, will alert when cooldown expires")
-            }
-            
+            console.log("Initial state set:", recommendation);
+
         } else {
-            console.log("No change in recommendation: ", recommendation);
+            console.log("No alert sent:", decision.reason);
         }
+
     } catch (error) {
-        console.error("Error monitoring prices:", error.message);
+        console.error("Monitoring error:", error.message);
     }
 
     await dailySummary(); // Check for daily summary
-
 }
+
 
 async function dailySummary() {
     // Daily Summary at 10am UTC
