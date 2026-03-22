@@ -18,7 +18,7 @@ async function fetchMetalPrice(symbol) {
     return data.price;
 }
 
-async function fetchMetalPrices() {
+async function getPrices() {
     const { cachedData, lastFetchTime } = getCache();
     
     if (cachedData && lastFetchTime && (Date.now() - lastFetchTime < CACHE_DURATION)) {
@@ -32,7 +32,7 @@ async function fetchMetalPrices() {
         const gold = await fetchMetalPrice("XAU");
         const silver = await fetchMetalPrice("XAG");
 
-        payload = { goldPrice: Number(gold.toFixed(3)), silverPrice: Number(silver.toFixed(3)) };
+        const payload = { goldPrice: Number(gold.toFixed(3)), silverPrice: Number(silver.toFixed(3)) };
         setCache(payload);
 
         return payload;
@@ -51,4 +51,4 @@ async function fetchMetalPrices() {
 }
 
 
-module.exports = { fetchMetalPrices };
+module.exports = { getPrices };

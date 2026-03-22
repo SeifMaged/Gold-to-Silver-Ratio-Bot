@@ -6,7 +6,7 @@ function calculateRatio(gold, silver) {
     return Number((gold / silver).toFixed(3));
 }
 
-function evaluateRatio(ratio, buyThreshold, sellThreshold, lastRecommendation) {
+function generateSignal(ratio, buyThreshold, sellThreshold, lastRecommendation) {
     const HYSTERESIS = 2; // buffer
 
     if (lastRecommendation === "BUY SILVER") {
@@ -24,4 +24,4 @@ function evaluateRatio(ratio, buyThreshold, sellThreshold, lastRecommendation) {
     return "HOLD";
 }
 
-module.exports = { calculateRatio, evaluateRatio };
+module.exports = { calculateRatio, generateSignal };

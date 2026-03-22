@@ -1,5 +1,5 @@
-const { fetchMetalPrices } = require('../services/priceService');
-const { calculateRatio, evaluateRatio } = require("../services/signalService");
+const { getPrices } = require('../services/priceService');
+const { calculateRatio, generateSignal } = require("../services/signalService");
 const { sendTelegramMessage } = require('../services/alertService');
 const { getState, updateState } = require('../services/stateService');
 
@@ -11,9 +11,9 @@ async function monitorPrices() {
 
 
     try {
-        const { goldPrice, silverPrice } = await fetchMetalPrices();
+        const { goldPrice, silverPrice } = await getPrices();
         const ratio = calculateRatio(goldPrice, silverPrice);
-        const recommendation = evaluateRatio(ratio, state.silverThresholdBuy, state.silverThresholdSell, state.lastRecommendation);
+        const recommendation = generateSignal(ratio, state.silverThresholdBuy, state.silverThresholdSell, state.lastRecommendation);
         
         
         if (!state.lastRecommendation){
@@ -51,9 +51,9 @@ async function dailySummary() {
 
     if (now >= today10UTC && (!lastSent || lastSent < today10UTC)) {
         try {
-            const { goldPrice, silverPrice } = await fetchMetalPrices();
+            const { goldPrice, silverPrice } = await getPrices();
             const ratio = calculateRatio(goldPrice, silverPrice);
-            const recommendation = evaluateRatio(
+            const recommendation = generateSignal(
                 ratio, 
                 state.silverThresholdBuy, 
                 state.silverThresholdSell, 

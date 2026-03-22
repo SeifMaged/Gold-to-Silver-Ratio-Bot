@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
-const { fetchMetalPrices } = require('./services/priceService');
-const { calculateRatio, evaluateRatio } = require("./services/signalService");
+const { getPrices } = require('./services/priceService');
+const { calculateRatio, generateSignal } = require("./services/signalService");
 const { startScheduler } = require('./jobs/scheduler');
 const { getState, updateState} = require('./services/stateService');
 const { requireAPIKey, limiter} = require('./utils/middleware');
@@ -14,11 +14,11 @@ app.use(limiter);
 
 app.get("/prices", async (req, res) => {
     try {
-        const { goldPrice, silverPrice } = await fetchMetalPrices();
+        const { goldPrice, silverPrice } = await getPrices();
         
         const ratio = calculateRatio(goldPrice, silverPrice);
         const { silverThresholdBuy, silverThresholdSell } = getState();
-        const recommendation = evaluateRatio(ratio, silverThresholdBuy, silverThresholdSell);
+        const recommendation = generateSignal(ratio, silverThresholdBuy, silverThresholdSell);
 
 
     res.json({gold: goldPrice, silver: silverPrice, ratio, recommendation: recommendation});
