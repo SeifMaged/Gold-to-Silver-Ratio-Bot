@@ -3,6 +3,6 @@ const router = express.Router();
 
 const { getPricesHandler } = require("../controllers/priceController");
 
-router.get('prices', getPricesHandler);
+router.get('/', getPricesHandler);
 
 module.exports = router;

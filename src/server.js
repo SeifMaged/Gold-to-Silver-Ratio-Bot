@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 app.use(limiter);
 
 // Routes
-app.use('/', priceRoutes);
-app.use('/', configRoutes);
+app.use('/prices', priceRoutes);
+app.use('/config', configRoutes);
 
 // Status route (can move later)
 app.get("/status", (req, res) => {
