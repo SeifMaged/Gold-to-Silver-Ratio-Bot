@@ -2,6 +2,10 @@
 
 A backend financial monitoring microservice built with Node.js and Express that tracks the Gold/Silver ratio, and sends real-time Telegram alerts when configurable thresholds are crossed.
 
+## Deployed on Render:
+
+🔗 **Live API:** https://gsr-monitor.onrender.com
+
 ## Features
 
 - Fetches real-time gold and silver prices from a public metals API
